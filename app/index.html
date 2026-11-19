@@ -9,53 +9,66 @@
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<div class="studio">
-  <aside class="sidebar" id="sidebar">
-    <header class="brand">
-      <h1>VICE CITY<br>COVER STUDIO</h1>
-      <p class="tagline">Your photo, your caption, a Vice City sunset — as cover art, exported as PNG. Everything runs offline in this browser; your photos never leave your machine.</p>
-    </header>
-
-    <div class="toolbar">
-      <label class="field">Layout
-        <select id="layoutSel"></select>
-      </label>
-      <label class="field">Colour grade
-        <select id="gradeSel"></select>
-      </label>
-      <label class="field">Frame
-        <select id="frameSel"></select>
-      </label>
-      <label class="field">Export size
-        <select id="sizeSel"></select>
-      </label>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <h1>VICE CITY COVER STUDIO</h1>
+      <p>Your photo, your caption, a Vice City sunset — as cover art, exported as PNG. Everything runs offline in this browser; your photos never leave your machine.</p>
     </div>
-
-    <label class="field">Caption
-      <input id="capInput" type="text" maxlength="40" value="SUNSET HEIST">
-    </label>
-    <label class="field">Subtitle
-      <input id="subInput" type="text" maxlength="60" value="VICE CITY">
-    </label>
-    <label class="check-row">
-      <input id="fillAllChk" type="checkbox">
-      <span>One photo fills all panels</span>
-    </label>
-
-    <div class="panels" id="panelsBox"></div>
-
-    <div class="actions">
-      <button id="shuffleBtn" type="button" class="ghost-btn">Surprise me</button>
-      <button id="exportBtn" type="button" class="primary-btn">Export PNG 1080 x 1080</button>
+    <div class="presets" aria-label="One-click looks">
+      <span class="presets-label">One-click looks:</span>
+      <button type="button" data-preset="sunset">Sunset Heist</button>
+      <button type="button" data-preset="neon">Neon Streets</button>
+      <button type="button" data-preset="vice">Vice Nights</button>
     </div>
-    <p id="statusMsg" class="status" role="status">Pick a photo for a panel, or use a sample.</p>
-    <footer class="fineprint">
-      Original vector art drawn on canvas — no Rockstar logo, artwork, character or font. Built for the make.fun bounty “Make GTA 6 Cover Art”.
-    </footer>
-  </aside>
-  <section class="preview-pane">
-    <canvas id="coverCanvas" width="1080" height="1080" aria-label="Cover preview"></canvas>
-  </section>
+  </header>
+
+  <main class="workspace">
+    <section class="stage">
+      <canvas id="coverCanvas" width="1080" height="1080" aria-label="Cover preview"></canvas>
+    </section>
+
+    <aside class="controls" id="sidebar">
+      <div class="toolbar">
+        <label class="field">Layout
+          <select id="layoutSel"></select>
+        </label>
+        <label class="field">Colour grade
+          <select id="gradeSel"></select>
+        </label>
+        <label class="field">Frame
+          <select id="frameSel"></select>
+        </label>
+        <label class="field">Export size
+          <select id="sizeSel"></select>
+        </label>
+      </div>
+
+      <label class="field">Caption
+        <input id="capInput" type="text" maxlength="40" value="SUNSET HEIST">
+      </label>
+      <label class="field">Subtitle
+        <input id="subInput" type="text" maxlength="60" value="VICE CITY">
+      </label>
+      <label class="check-row">
+        <input id="fillAllChk" type="checkbox">
+        <span>One photo fills all panels</span>
+      </label>
+
+      <div class="panels" id="panelsBox"></div>
+
+      <div class="actions">
+        <button id="shuffleBtn" type="button" class="btn btn-ghost">Surprise me</button>
+        <button id="copyLinkBtn" type="button" class="btn btn-ghost">Copy link to this cover</button>
+        <button id="resetBtn" type="button" class="btn btn-ghost">Reset</button>
+        <button id="exportBtn" type="button" class="btn btn-primary">Export PNG 1080 x 1080</button>
+      </div>
+      <p id="statusMsg" class="status" role="status">Pick a photo for a panel, or use a sample.</p>
+      <footer class="fineprint">
+        Original vector art drawn on canvas — no Rockstar logo, artwork, character or font. Built for the make.fun bounty “Make GTA 6 Cover Art”.
+      </footer>
+    </aside>
+  </main>
 </div>
 <script type="module" src="./src/main.js"></script>
 </body>
