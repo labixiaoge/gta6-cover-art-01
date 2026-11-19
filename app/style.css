@@ -1,24 +1,157 @@
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: #12081c; color: #f5eefc; font: 14px/1.45 system-ui, sans-serif; }
-.app { display: flex; gap: 24px; align-items: flex-start; padding: 20px; }
-.controls { width: 320px; flex: none; display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 40px); overflow-y: auto; padding-right: 4px; }
-.controls h1 { margin: 0; font-size: 22px; letter-spacing: 1px; color: #ffd166; }
-.tagline { margin: 0; color: #c9aee0; }
-label { display: flex; flex-direction: column; gap: 5px; font-weight: 600; }
-label.check { flex-direction: row; align-items: center; gap: 8px; }
-input[type=text], select { font: inherit; padding: 8px; border: 1px solid #5b3a78; border-radius: 6px; background: #241233; color: #f5eefc; }
-input[type=file] { font: inherit; color: #f5eefc; }
-input[type=range] { width: 100%; accent-color: #ff7e5f; }
-button { font: inherit; font-weight: 700; padding: 10px; border: 0; border-radius: 6px; background: #ff7e5f; color: #1d0a24; cursor: pointer; }
-button:hover { background: #ff9a3d; }
-.panel { border: 1px solid #5b3a78; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; margin: 0; }
-.panel legend { font-weight: 700; color: #ffd166; padding: 0 6px; }
-.panel button { background: #3a1f52; color: #f5eefc; }
-#export { background: #ffd166; font-size: 16px; }
-#status { margin: 0; color: #9be7ff; min-height: 20px; }
-.preview { flex: 1; display: flex; justify-content: center; }
-canvas { max-width: calc(100vw - 380px); max-height: calc(100vh - 40px); width: auto; height: auto; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); background: #14081f; }
-body.shot-cover .controls { display: none; }
-body.shot-cover .app { padding: 0; gap: 0; }
-body.shot-cover canvas { width: 100vw; height: 100vh; max-width: none; max-height: none; box-shadow: none; }
-body.shot-editor canvas { max-width: calc(100vw - 380px); }
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #12081c;
+  color: #f5eefc;
+  font: 14px/1.45 system-ui, sans-serif;
+}
+
+.app {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 20px;
+}
+
+.controls {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 12px;
+  width: 320px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.controls h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: #ffd166;
+}
+
+.tagline {
+  margin: 0;
+  color: #c9aee0;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 600;
+}
+
+label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+input[type="text"],
+select {
+  font: inherit;
+  padding: 8px;
+  border: 1px solid #5b3a78;
+  border-radius: 6px;
+  background: #241233;
+  color: #f5eefc;
+}
+
+input[type="file"] {
+  font: inherit;
+  color: #f5eefc;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #ff7e5f;
+}
+
+button {
+  font: inherit;
+  font-weight: 700;
+  padding: 10px;
+  border: 0;
+  border-radius: 6px;
+  background: #ff7e5f;
+  color: #1d0a24;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ff9a3d;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #5b3a78;
+  border-radius: 8px;
+}
+
+.panel legend {
+  padding: 0 6px;
+  font-weight: 700;
+  color: #ffd166;
+}
+
+.panel button {
+  background: #3a1f52;
+  color: #f5eefc;
+}
+
+#export {
+  background: #ffd166;
+  font-size: 16px;
+}
+
+#status {
+  margin: 0;
+  min-height: 20px;
+  color: #9be7ff;
+}
+
+.preview {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+canvas {
+  width: auto;
+  height: auto;
+  max-width: calc(100vw - 380px);
+  max-height: calc(100vh - 40px);
+  background: #14081f;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Screenshot modes: hide the editor for a full-bleed cover shot. */
+body.shot-cover .controls {
+  display: none;
+}
+
+body.shot-cover .app {
+  padding: 0;
+  gap: 0;
+}
+
+body.shot-cover canvas {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  max-height: none;
+  box-shadow: none;
+}
+
+body.shot-editor canvas {
+  max-width: calc(100vw - 380px);
+}
