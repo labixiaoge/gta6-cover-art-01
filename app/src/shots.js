@@ -1,24 +1,33 @@
 // Screenshot driver: reads the cover options out of the query string,
 // hands them to the app's setup step, then flags the page ready once the
 // browser has painted twice, so a screenshot never catches a half-drawn
-// cover. The `frame` option is new in round 4; older links without it
-// still work and fall back to no frame.
+// cover. Any option left out of the query falls back to the defaults
+// below, so older links without `frame` still work.
+const DEFAULTS = {
+  photo: 'pier',
+  caption: 'Sunset Heist',
+  layout: 'hero',
+  grade: 'sunset',
+  frame: 'none',
+  size: '1080x1080',
+  subtitle: 'VICE CITY',
+};
+
+// Merge the query string over the defaults, key by key.
+function readOptions(query) {
+  const options = {};
+  for (const key of Object.keys(DEFAULTS)) {
+    options[key] = query.get(key) || DEFAULTS[key];
+  }
+  return options;
+}
+
 export async function runShot(shot, query, setup) {
-  if (shot === 'cover') document.body.classList.add('shot-cover');
-  if (shot === 'editor') document.body.classList.add('shot-editor');
-  const options = {
-    photo: query.get('photo') || 'pier',
-    caption: query.get('caption') || 'Sunset Heist',
-    layout: query.get('layout') || 'hero',
-    grade: query.get('grade') || 'sunset',
-    frame: query.get('frame') || 'none',
-    size: query.get('size') || '1080x1080',
-    subtitle: query.get('subtitle') || 'VICE CITY',
-  };
+  document.body.classList.add(shot === 'cover' ? 'shot-cover' : 'shot-editor');
+  const options = readOptions(query);
   await setup(options);
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      window.__shotReady = true;
-    });
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
   });
+  window.__shotReady = true;
 }
