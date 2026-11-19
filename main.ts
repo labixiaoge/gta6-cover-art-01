@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-app.ts';
 
@@ -18,19 +18,21 @@ const DOSSIER_LIMITS = {
   app_path_max_bytes: 1000,
 };
 
+// Walk a directory and return every file under it as a path relative to
+// the directory, sorted, so the report is stable between runs.
+function walk(dir, base = dir) {
+  const found = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) found.push(...walk(full, base));
+    else found.push(relative(base, full));
+  }
+  return found.sort();
+}
+
 // Fail fast when a piece the dossier needs is missing, naming the path.
 function requireEntry(path, what) {
   if (!existsSync(path)) throw new Error(`missing ${what}: ${path}`);
-}
-
-// Count the files under a directory, so the run can say what it packaged.
-function countFiles(dir) {
-  let total = 0;
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isDirectory()) total += countFiles(join(dir, entry.name));
-    else total += 1;
-  }
-  return total;
 }
 
 // Copy a whole directory when it exists; an absent one leaves an empty
@@ -52,6 +54,26 @@ function verifyDossier(dossierPath) {
   return bytes;
 }
 
+// The screenshots must be exactly four real JPEGs, each big enough to
+// be a picture rather than a blank frame; a missing or empty shot fails
+// the run here, not at the gate.
+function checkShots(shotDir) {
+  const names = walk(shotDir);
+  if (names.length !== 4) throw new Error(`expected 4 screenshots, found ${names.length}`);
+  for (const name of names) {
+    if (!name.endsWith('.jpg')) throw new Error(`screenshot is not a JPEG: ${name}`);
+    const bytes = statSync(join(shotDir, name)).size;
+    if (bytes < 10000) throw new Error(`screenshot too small (${bytes} bytes): ${name}`);
+  }
+  return names;
+}
+
+// Stage report: what went into the output, so a run can say what it did.
+function stageReport(appFiles, shotFiles) {
+  console.log(`stage: app ${appFiles.length} files, screenshots ${shotFiles.length} files`);
+  for (const name of shotFiles) console.log(`stage: screenshot ${name}`);
+}
+
 function main() {
   requireEntry(join(repoRoot, 'app', 'index.html'), 'app entry');
   requireEntry(join(repoRoot, 'screenshots'), 'screenshots folder');
@@ -59,13 +81,15 @@ function main() {
   copyTree(join(repoRoot, 'app'), join(outputDir, 'app'));
   copyTree(join(repoRoot, 'screenshots'), join(outputDir, 'screenshots'));
 
-  const appFiles = countFiles(join(outputDir, 'app'));
-  const shotFiles = countFiles(join(outputDir, 'screenshots'));
+  const appFiles = walk(join(outputDir, 'app'));
+  const shotFiles = checkShots(join(outputDir, 'screenshots'));
+  stageReport(appFiles, shotFiles);
+
   const dossier = buildDossier(outputDir, DOSSIER_LIMITS);
   const dossierPath = join(outputDir, 'dossier.json');
   writeFileSync(dossierPath, dossier);
   const bytes = verifyDossier(dossierPath);
-  console.log(`packaged ${appFiles} app files and ${shotFiles} screenshots`);
+  console.log(`packaged ${appFiles.length} app files and ${shotFiles.length} screenshots`);
   console.log(`wrote ${dossierPath} (${bytes} bytes)`);
 }
 
