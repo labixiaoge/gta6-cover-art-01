@@ -11,6 +11,8 @@ const fillAllInput = document.getElementById('fillAll');
 const exportButton = document.getElementById('export');
 const statusLine = document.getElementById('status');
 
+// Everything the cover is drawn from: four photos (or none), the layout,
+// the grade, the export size, the words, and one zoom/pan set per panel.
 const state = {
   photos: [null, null, null, null],
   layout: 'hero',
@@ -33,6 +35,7 @@ export function loadImage(url) {
   });
 }
 
+// Resize the canvas to the chosen export size and label the export button.
 function resizeCanvas() {
   const dims = SIZES[state.size] || SIZES['1080x1080'];
   canvas.width = dims[0];
