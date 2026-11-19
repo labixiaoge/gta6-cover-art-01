@@ -16,6 +16,7 @@ body {
   padding: 20px;
 }
 
+/* Left column: every control lives here, scrollable on short screens. */
 .controls {
   display: flex;
   flex: none;
@@ -134,7 +135,7 @@ canvas {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
-/* Screenshot modes: hide the editor for a full-bleed cover shot. */
+/* Screenshot modes: a cover shot hides the editor for a full-bleed frame. */
 body.shot-cover .controls {
   display: none;
 }
