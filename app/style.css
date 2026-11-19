@@ -1,158 +1,262 @@
+/* Vice City Cover Studio — editor styles, rewritten for round 4. */
+:root {
+  --ink: #f5eefc;
+  --ink-dim: #c9aee0;
+  --ink-faint: #9be7ff;
+  --bg: #160a24;
+  --panel-bg: #241233;
+  --panel-line: #5b3a78;
+  --gold: #ffd166;
+  --coral: #ff7e5f;
+  --coral-soft: #ff9a3d;
+  --cyan: #00e5ff;
+}
+
 * { box-sizing: border-box; }
 
 html,
 body {
   margin: 0;
   min-height: 100%;
-  background: #12081c;
-  color: #f5eefc;
-  font: 14px/1.45 system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-.app {
-  display: flex;
-  align-items: flex-start;
+/* Two columns: a scrollable sidebar of controls and a live preview. */
+.studio {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
   gap: 24px;
+  align-items: start;
   padding: 20px;
+  min-height: 100vh;
 }
 
-/* Left column: every control lives here, scrollable on short screens. */
-.controls {
+.sidebar {
   display: flex;
-  flex: none;
   flex-direction: column;
-  gap: 12px;
-  width: 320px;
+  gap: 14px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 6px;
+  scrollbar-width: thin;
 }
 
-.controls h1 {
+.brand h1 {
   margin: 0;
-  font-size: 22px;
-  letter-spacing: 1px;
-  color: #ffd166;
+  font-size: 26px;
+  line-height: 1.05;
+  letter-spacing: 2px;
+  color: var(--gold);
 }
 
 .tagline {
-  margin: 0;
-  color: #c9aee0;
+  margin: 8px 0 0;
+  color: var(--ink-dim);
 }
 
-label {
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  font-weight: 600;
+  font-weight: 650;
 }
 
-label.check {
-  flex-direction: row;
+.field input[type="text"],
+.field select {
+  font: inherit;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+  background: var(--panel-bg);
+  color: var(--ink);
+}
+
+.field input[type="text"]:focus,
+.field select:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+}
+
+.check-row {
+  display: flex;
   align-items: center;
   gap: 8px;
-}
-
-input[type="text"],
-select {
-  font: inherit;
-  padding: 8px;
-  border: 1px solid #5b3a78;
-  border-radius: 6px;
-  background: #241233;
-  color: #f5eefc;
-}
-
-input[type="file"] {
-  font: inherit;
-  color: #f5eefc;
-}
-
-input[type="range"] {
-  width: 100%;
-  accent-color: #ff7e5f;
-}
-
-button {
-  font: inherit;
-  font-weight: 700;
-  padding: 10px;
-  border: 0;
-  border-radius: 6px;
-  background: #ff7e5f;
-  color: #1d0a24;
+  font-weight: 600;
   cursor: pointer;
 }
 
-button:hover {
-  background: #ff9a3d;
+.check-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--coral);
 }
 
-.panel {
+/* Panel groups are built by main.js into #panelsBox. */
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin: 0;
-  padding: 10px;
-  border: 1px solid #5b3a78;
-  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid var(--panel-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.panel legend {
+.panel-card legend {
   padding: 0 6px;
+  font-weight: 750;
+  color: var(--gold);
+}
+
+.panel-card input[type="file"] {
+  font: inherit;
+  color: var(--ink);
+}
+
+.panel-card input[type="range"] {
+  width: 100%;
+  accent-color: var(--coral);
+}
+
+.panel-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.panel-card button {
+  align-self: flex-start;
+  font: inherit;
   font-weight: 700;
-  color: #ffd166;
-}
-
-.panel button {
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 6px;
   background: #3a1f52;
-  color: #f5eefc;
+  color: var(--ink);
+  cursor: pointer;
 }
 
-#export {
-  background: #ffd166;
+.panel-card button:hover {
+  background: #4c2a68;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ghost-btn,
+.primary-btn {
+  font: inherit;
+  font-weight: 750;
+  padding: 11px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ghost-btn {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--panel-line);
+}
+
+.ghost-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.primary-btn {
+  background: var(--gold);
+  color: #1d0a24;
   font-size: 16px;
 }
 
-#status {
+.primary-btn:hover {
+  background: var(--coral-soft);
+}
+
+.status {
   margin: 0;
   min-height: 20px;
-  color: #9be7ff;
+  color: var(--ink-faint);
 }
 
-.preview {
-  flex: 1;
+.fineprint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--panel-line);
+  padding-top: 10px;
+}
+
+.preview-pane {
   display: flex;
   justify-content: center;
+  position: sticky;
+  top: 20px;
 }
 
-canvas {
+.preview-pane canvas {
   width: auto;
   height: auto;
-  max-width: calc(100vw - 380px);
+  max-width: 100%;
   max-height: calc(100vh - 40px);
   background: #14081f;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.65);
 }
 
-/* Screenshot modes: a cover shot hides the editor for a full-bleed frame. */
-body.shot-cover .controls {
+/* Narrow screens: stack the sidebar above the preview. */
+@media (max-width: 900px) {
+  .studio {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .preview-pane {
+    position: static;
+  }
+}
+
+/* Screenshot modes: a cover shot hides the sidebar for a full-bleed frame. */
+body.shot-cover .sidebar {
   display: none;
 }
 
-body.shot-cover .app {
+body.shot-cover .studio {
   padding: 0;
   gap: 0;
+  grid-template-columns: 1fr;
 }
 
-body.shot-cover canvas {
+body.shot-cover .preview-pane canvas {
   width: 100vw;
   height: 100vh;
   max-width: none;
   max-height: none;
   box-shadow: none;
-}
-
-body.shot-editor canvas {
-  max-width: calc(100vw - 380px);
 }
