@@ -9,7 +9,7 @@ const gradeSelect = document.getElementById('grade');
 const sizeSelect = document.getElementById('size');
 const fillAllInput = document.getElementById('fillAll');
 const exportButton = document.getElementById('export');
-const status = document.getElementById('status');
+const statusLine = document.getElementById('status');
 
 const state = {
   photos: [null, null, null, null],
@@ -33,7 +33,7 @@ export function loadImage(url) {
   });
 }
 
-function applySize() {
+function resizeCanvas() {
   const dims = SIZES[state.size] || SIZES['1080x1080'];
   canvas.width = dims[0];
   canvas.height = dims[1];
@@ -41,57 +41,79 @@ function applySize() {
 }
 
 function redraw() {
-  applySize();
+  resizeCanvas();
   drawCover(canvas, state);
 }
 
-function setStatus(msg) {
-  status.textContent = msg;
+function say(message) {
+  statusLine.textContent = message;
 }
 
+// One control group per panel: file upload, sample photo, zoom and pan.
 for (let i = 0; i < 4; i++) {
   const fileInput = document.getElementById(`photo-${i}`);
-  fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
+  fileInput.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
     if (!file) return;
     state.photos[i] = await loadImage(URL.createObjectURL(file));
     redraw();
-    setStatus(`Panel ${i + 1} photo loaded.`);
+    say(`Panel ${i + 1} photo loaded.`);
   });
+
   const sampleButton = document.getElementById(`sample-${i}`);
   sampleButton.addEventListener('click', async () => {
-    state.photos[i] = await loadImage(`samples/${i % 2 === 0 ? 'pier' : 'boulevard'}.jpg`);
+    const sample = i % 2 === 0 ? 'pier' : 'boulevard';
+    state.photos[i] = await loadImage(`samples/${sample}.jpg`);
     redraw();
-    setStatus(`Panel ${i + 1} using sample photo.`);
+    say(`Panel ${i + 1} using sample photo.`);
   });
-  const zoom = document.getElementById(`zoom-${i}`);
-  zoom.addEventListener('input', () => { state.zoom[i] = Number(zoom.value); redraw(); });
-  const ox = document.getElementById(`ox-${i}`);
-  ox.addEventListener('input', () => { state.ox[i] = Number(ox.value); redraw(); });
-  const oy = document.getElementById(`oy-${i}`);
-  oy.addEventListener('input', () => { state.oy[i] = Number(oy.value); redraw(); });
+
+  const zoomSlider = document.getElementById(`zoom-${i}`);
+  zoomSlider.addEventListener('input', () => {
+    state.zoom[i] = Number(zoomSlider.value);
+    redraw();
+  });
+  const panXSlider = document.getElementById(`ox-${i}`);
+  panXSlider.addEventListener('input', () => {
+    state.ox[i] = Number(panXSlider.value);
+    redraw();
+  });
+  const panYSlider = document.getElementById(`oy-${i}`);
+  panYSlider.addEventListener('input', () => {
+    state.oy[i] = Number(panYSlider.value);
+    redraw();
+  });
 }
 
 captionInput.addEventListener('input', () => { state.caption = captionInput.value; redraw(); });
 subtitleInput.addEventListener('input', () => { state.subtitle = subtitleInput.value; redraw(); });
 layoutSelect.addEventListener('change', () => { state.layout = layoutSelect.value; redraw(); });
 gradeSelect.addEventListener('change', () => { state.grade = gradeSelect.value; redraw(); });
-sizeSelect.addEventListener('change', () => { state.size = sizeSelect.value; redraw(); setStatus(`Size set to ${state.size}.`); });
+sizeSelect.addEventListener('change', () => {
+  state.size = sizeSelect.value;
+  redraw();
+  say(`Size set to ${state.size}.`);
+});
 fillAllInput.addEventListener('change', () => { state.fillAll = fillAllInput.checked; redraw(); });
 
 exportButton.addEventListener('click', () => {
   const dims = SIZES[state.size] || SIZES['1080x1080'];
-  const name = `vice-city-cover-${dims[0]}x${dims[1]}.png`;
+  const filename = `vice-city-cover-${dims[0]}x${dims[1]}.png`;
   canvas.toBlob((blob) => {
-    if (!blob) { setStatus('Export failed.'); return; }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = name;
-    a.click();
-    setStatus(`Saved ${name}`);
+    if (!blob) {
+      say('Export failed.');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    say(`Saved ${filename}`);
   }, 'image/png');
 });
 
+// Screenshot mode (?shot=...) drives the app from the query string and
+// reports readiness through window.__shotReady; otherwise just draw once.
 const query = new URLSearchParams(location.search);
 const shot = query.get('shot');
 if (shot) {
