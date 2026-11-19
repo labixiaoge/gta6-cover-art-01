@@ -1,5 +1,5 @@
 // Cover renderer: draws the multi-panel cover onto a canvas.
-// Everything here is hand-drawn vector art on top of the user's photos:
+// All decoration is hand-drawn vector art laid over the user's photos:
 // a synthwave sun, palm silhouettes, a skyline, a colour grade, a vignette
 // and a big gradient title. No Rockstar artwork, logo, character or font
 // is used anywhere; titles use system fonts only.
@@ -13,7 +13,8 @@ export const SIZES = {
   '1920x1080': [1920, 1080],
 };
 
-// Panel rectangles [x, y, w, h] for a layout; unused slots are null.
+// Panel rectangles [x, y, w, h] for a layout; slots a layout does not use
+// are null.
 export function layoutRects(layout, w, h) {
   if (layout === 'triptych') {
     const third = w / 3;
@@ -38,12 +39,14 @@ export function layoutRects(layout, w, h) {
   return [[0, 0, left, h], [left, 0, right, h / 2], [left, h / 2, right, h / 2], null];
 }
 
+// How many panels a layout actually shows.
 function visiblePanels(layout) {
   if (layout === 'single') return 1;
   if (layout === 'quad') return 4;
   return 3;
 }
 
+// Canvas filter string applied to photos under each grade.
 const PHOTO_FILTERS = {
   sunset: 'saturate(1.25) contrast(1.08)',
   neon: 'saturate(1.6) contrast(1.12) hue-rotate(-8deg)',
@@ -51,7 +54,7 @@ const PHOTO_FILTERS = {
   noir: 'saturate(0.15) contrast(1.35) brightness(1.05)',
 };
 
-// Empty panel: sunset gradient, a striped sun and an "add photo" prompt.
+// A panel with no photo yet: sunset wash, a striped sun, an invitation.
 function drawEmptyPanel(ctx, x, y, pw, ph) {
   const wash = ctx.createLinearGradient(x, y, x, y + ph);
   wash.addColorStop(0, '#ff9a3d');
@@ -79,7 +82,7 @@ function drawEmptyPanel(ctx, x, y, pw, ph) {
   ctx.fillText('ADD PHOTO', cx, y + ph * 0.78);
 }
 
-// Cover-fit a photo inside a panel, with zoom and pan offsets in [-1, 1].
+// Cover-fit a photo inside a panel; zoom scales it, ox/oy pan it in [-1, 1].
 function drawPhoto(ctx, img, x, y, pw, ph, zoom, ox, oy) {
   const fit = Math.max(pw / img.naturalWidth, ph / img.naturalHeight);
   const scale = fit * zoom;
@@ -120,7 +123,7 @@ function drawPalm(ctx, x, y, scale, lean) {
   ctx.restore();
 }
 
-// Jagged rooftop silhouette along the bottom of the cover.
+// Jagged rooftop silhouette along the bottom edge of the cover.
 function drawSkyline(ctx, w, h) {
   const roofline = [0.10, 0.16, 0.08, 0.20, 0.12, 0.18, 0.09, 0.22, 0.13, 0.17, 0.07, 0.15];
   const step = w / roofline.length;
@@ -266,6 +269,7 @@ function drawTitle(ctx, w, h, caption, subtitle, grade) {
   ctx.restore();
 }
 
+// Draw the whole cover for a state: panels, art, grade, vignette, title.
 export function drawCover(canvas, state) {
   const ctx = canvas.getContext('2d');
   const w = canvas.width;
@@ -283,7 +287,7 @@ export function drawCover(canvas, state) {
   for (let i = 0; i < count; i++) {
     const rect = rects[i];
     if (!rect) continue;
-    // Inset each panel by half a gap on the sides shared with a neighbour.
+    // Inset each panel by half a gap on the sides it shares with a neighbour.
     const px = rect[0] === 0 ? rect[0] : rect[0] + gap / 2;
     const pw = rect[2] - (rect[0] === 0 ? gap / 2 : gap);
     const py = rect[1] === 0 ? rect[1] : rect[1] + gap / 2;
