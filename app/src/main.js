@@ -1,25 +1,44 @@
 import { renderCover, SIZES, LAYOUTS, GRADES, FRAMES } from './cover.js';
 import { runShot } from './shots.js';
 
-// Grab the static controls once; the four panel groups are built below.
-const canvas = document.getElementById('coverCanvas');
-const capInput = document.getElementById('capInput');
-const subInput = document.getElementById('subInput');
-const layoutSel = document.getElementById('layoutSel');
-const gradeSel = document.getElementById('gradeSel');
-const sizeSel = document.getElementById('sizeSel');
-const frameSel = document.getElementById('frameSel');
-const fillAllChk = document.getElementById('fillAllChk');
-const shuffleBtn = document.getElementById('shuffleBtn');
-const exportBtn = document.getElementById('exportBtn');
-const statusMsg = document.getElementById('statusMsg');
-const panelsBox = document.getElementById('panelsBox');
+// Small helper so every control below reads as a name, not a lookup.
+const $ = (id) => document.getElementById(id);
+const canvas = $('coverCanvas');
+const capInput = $('capInput');
+const subInput = $('subInput');
+const layoutSel = $('layoutSel');
+const gradeSel = $('gradeSel');
+const sizeSel = $('sizeSel');
+const frameSel = $('frameSel');
+const fillAllChk = $('fillAllChk');
+const shuffleBtn = $('shuffleBtn');
+const exportBtn = $('exportBtn');
+const copyLinkBtn = $('copyLinkBtn');
+const resetBtn = $('resetBtn');
+const statusMsg = $('statusMsg');
+const panelsBox = $('panelsBox');
 
-// Everything a cover is drawn from: four photos (or none), the layout, the
-// grade, the frame, the export size, the words, and one zoom/pan set per
-// panel. The shuffle button re-rolls layout, grade and frame from this.
-const state = {
-  photos: [null, null, null, null],
+// One-click looks: each preset sets the layout, grade, frame and words
+// in one go, and the user can tweak the result from there.
+const PRESETS = {
+  sunset: { layout: 'hero', grade: 'sunset', frame: 'none', caption: 'SUNSET HEIST', subtitle: 'VICE CITY' },
+  neon: { layout: 'triptych', grade: 'neon', frame: 'cinema', caption: 'NEON STREETS', subtitle: 'VICE CITY' },
+  vice: { layout: 'columns', grade: 'ember', frame: 'polaroid', caption: 'VICE NIGHTS', subtitle: 'LEONIDA' },
+};
+
+// Captions the Surprise button can roll, so a re-roll can change the
+// words as well as the look.
+const ROLL_CAPTIONS = ['SUNSET HEIST', 'NEON STREETS', 'VICE NIGHTS', 'OCEAN DRIVE', 'PALM SHADOWS'];
+
+// A photo slot: the image (or null), plus its crop (zoom and pan).
+function emptySlot() {
+  return { img: null, zoom: 1, ox: 0, oy: 0 };
+}
+
+// Everything a cover is drawn from: four photo slots, the layout, the
+// grade, the frame, the export size, the words, and a fill-all switch.
+const studio = {
+  panels: [emptySlot(), emptySlot(), emptySlot(), emptySlot()],
   layout: 'hero',
   grade: 'sunset',
   frame: 'none',
@@ -27,9 +46,6 @@ const state = {
   caption: 'SUNSET HEIST',
   subtitle: 'VICE CITY',
   fillAll: false,
-  zoom: [1, 1, 1, 1],
-  ox: [0, 0, 0, 0],
-  oy: [0, 0, 0, 0],
 };
 
 export function loadPhoto(url) {
@@ -41,52 +57,65 @@ export function loadPhoto(url) {
   });
 }
 
-// Fill a <select> from a list of values, with a human label per value.
-function fillSelect(select, values, labels) {
+// Fill a <select> from [value, label] pairs.
+function fillSelect(select, pairs) {
   select.innerHTML = '';
-  for (const value of values) {
+  for (const [value, label] of pairs) {
     const option = document.createElement('option');
     option.value = value;
-    option.textContent = labels[value] || value;
+    option.textContent = label;
     select.appendChild(option);
   }
 }
 
-fillSelect(layoutSel, LAYOUTS, {
-  hero: 'Hero — one tall panel, two small ones',
-  triptych: 'Triptych — three tall panels',
-  quad: 'Quad — 2 x 2 panels',
-  single: 'Single — one full-bleed photo',
-  diptych: 'Diptych — two tall panels',
-  bands: 'Bands — three horizontal strips',
-});
-fillSelect(gradeSel, GRADES, {
-  sunset: 'Sunset — orange and magenta',
-  neon: 'Neon — cyan and magenta',
-  gold: 'Gold — teal shadows and gold',
-  noir: 'Noir — desaturated, high contrast',
-  dawn: 'Dawn — soft rose and lavender',
-  midnight: 'Midnight — deep blue and stars',
-});
-fillSelect(frameSel, FRAMES, {
-  none: 'No frame',
-  polaroid: 'Polaroid — white border, thick foot',
-  cinema: 'Cinema — black letterbox bars',
-});
-fillSelect(sizeSel, Object.keys(SIZES), {
-  '1080x1080': '1080 x 1080 — square post',
-  '1080x1350': '1080 x 1350 — portrait post',
-  '1080x1920': '1080 x 1920 — story',
-  '1920x1080': '1920 x 1080 — landscape post',
-});
-layoutSel.value = state.layout;
-gradeSel.value = state.grade;
-frameSel.value = state.frame;
-sizeSel.value = state.size;
+fillSelect(layoutSel, [
+  ['hero', 'Hero — one tall panel, two small ones'],
+  ['triptych', 'Triptych — three tall panels'],
+  ['quad', 'Quad — 2 x 2 panels'],
+  ['single', 'Single — one full-bleed photo'],
+  ['diptych', 'Diptych — two tall panels'],
+  ['bands', 'Bands — three horizontal strips'],
+  ['columns', 'Columns — four tall strips'],
+  ['stack', 'Stack — one wide band, three small ones'],
+]);
+fillSelect(gradeSel, [
+  ['sunset', 'Sunset — orange and magenta'],
+  ['neon', 'Neon — cyan and magenta'],
+  ['gold', 'Gold — teal shadows and gold'],
+  ['noir', 'Noir — desaturated, high contrast'],
+  ['dawn', 'Dawn — soft rose and lavender'],
+  ['midnight', 'Midnight — deep blue and stars'],
+  ['ember', 'Ember — deep red and smoke'],
+]);
+fillSelect(frameSel, [
+  ['none', 'No frame'],
+  ['polaroid', 'Polaroid — white border, thick foot'],
+  ['cinema', 'Cinema — black letterbox bars'],
+]);
+fillSelect(sizeSel, [
+  ['1080x1080', '1080 x 1080 — square post'],
+  ['1080x1350', '1080 x 1350 — portrait post'],
+  ['1080x1920', '1080 x 1920 — story'],
+  ['1920x1080', '1920 x 1080 — landscape post'],
+]);
+
+// Push the whole studio state back into the controls, so presets, the
+// shuffle button and the reset button all go through one path.
+function syncControls() {
+  layoutSel.value = studio.layout;
+  gradeSel.value = studio.grade;
+  frameSel.value = studio.frame;
+  sizeSel.value = studio.size;
+  capInput.value = studio.caption;
+  subInput.value = studio.subtitle;
+  fillAllChk.checked = studio.fillAll;
+}
+
+syncControls();
 
 // Resize the canvas to the chosen export size and label the export button.
 function resizeCanvas() {
-  const dims = SIZES[state.size] || SIZES['1080x1080'];
+  const dims = SIZES[studio.size] || SIZES['1080x1080'];
   canvas.width = dims[0];
   canvas.height = dims[1];
   exportBtn.textContent = `Export PNG ${dims[0]} x ${dims[1]}`;
@@ -94,34 +123,43 @@ function resizeCanvas() {
 
 function redraw() {
   resizeCanvas();
-  renderCover(canvas, state);
+  renderCover(canvas, studio);
 }
 
 function say(message) {
   statusMsg.textContent = message;
 }
 
-// Build one panel's controls: a file upload, a sample-photo button, and
-// zoom and pan sliders. The four groups are identical in shape, so they
-// are generated here instead of written out four times in the markup.
+// One panel's controls: a file upload, a sample-photo button, a clear
+// button, and zoom and pan sliders. The four cards share one shape, so
+// they are generated here instead of written out four times in the markup.
 function buildPanel(index) {
-  const group = document.createElement('fieldset');
-  group.className = 'panel-card';
-  const legend = document.createElement('legend');
-  legend.textContent = `Panel ${index + 1}`;
-  group.appendChild(legend);
+  const card = document.createElement('section');
+  card.className = 'panel';
+
+  const heading = document.createElement('h3');
+  heading.textContent = `Panel ${index + 1}`;
+  card.appendChild(heading);
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = 'image/*';
   fileInput.id = `photo-${index}`;
-  group.appendChild(fileInput);
+  card.appendChild(fileInput);
 
+  const row = document.createElement('div');
+  row.className = 'panel-btns';
   const sampleButton = document.createElement('button');
   sampleButton.type = 'button';
   sampleButton.id = `sample-${index}`;
   sampleButton.textContent = 'Use sample';
-  group.appendChild(sampleButton);
+  row.appendChild(sampleButton);
+  const clearButton = document.createElement('button');
+  clearButton.type = 'button';
+  clearButton.id = `clear-${index}`;
+  clearButton.textContent = 'Clear';
+  row.appendChild(clearButton);
+  card.appendChild(row);
 
   const sliders = [
     ['zoom', 'Zoom', 1, 3, 0.05, 1],
@@ -140,68 +178,129 @@ function buildPanel(index) {
     slider.step = String(step);
     slider.value = String(value);
     wrap.appendChild(slider);
-    group.appendChild(wrap);
+    card.appendChild(wrap);
     inputs[key] = slider;
   }
 
+  const slot = studio.panels[index];
   fileInput.addEventListener('change', async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    state.photos[index] = await loadPhoto(URL.createObjectURL(file));
+    slot.img = await loadPhoto(URL.createObjectURL(file));
     redraw();
     say(`Panel ${index + 1} photo loaded.`);
   });
   sampleButton.addEventListener('click', async () => {
     const sample = index % 2 === 0 ? 'pier' : 'boulevard';
-    state.photos[index] = await loadPhoto(`samples/${sample}.jpg`);
+    slot.img = await loadPhoto(`samples/${sample}.jpg`);
     redraw();
     say(`Panel ${index + 1} using sample photo.`);
   });
+  clearButton.addEventListener('click', () => {
+    slot.img = null;
+    slot.zoom = 1;
+    slot.ox = 0;
+    slot.oy = 0;
+    inputs.zoom.value = '1';
+    inputs.ox.value = '0';
+    inputs.oy.value = '0';
+    redraw();
+    say(`Panel ${index + 1} cleared.`);
+  });
   inputs.zoom.addEventListener('input', () => {
-    state.zoom[index] = Number(inputs.zoom.value);
+    slot.zoom = Number(inputs.zoom.value);
     redraw();
   });
   inputs.ox.addEventListener('input', () => {
-    state.ox[index] = Number(inputs.ox.value);
+    slot.ox = Number(inputs.ox.value);
     redraw();
   });
   inputs.oy.addEventListener('input', () => {
-    state.oy[index] = Number(inputs.oy.value);
+    slot.oy = Number(inputs.oy.value);
     redraw();
   });
-  return group;
+  return card;
 }
 
 for (let i = 0; i < 4; i++) panelsBox.appendChild(buildPanel(i));
 
-capInput.addEventListener('input', () => { state.caption = capInput.value; redraw(); });
-subInput.addEventListener('input', () => { state.subtitle = subInput.value; redraw(); });
-layoutSel.addEventListener('change', () => { state.layout = layoutSel.value; redraw(); });
-gradeSel.addEventListener('change', () => { state.grade = gradeSel.value; redraw(); });
-frameSel.addEventListener('change', () => { state.frame = frameSel.value; redraw(); });
+capInput.addEventListener('input', () => { studio.caption = capInput.value; redraw(); });
+subInput.addEventListener('input', () => { studio.subtitle = subInput.value; redraw(); });
+layoutSel.addEventListener('change', () => { studio.layout = layoutSel.value; redraw(); });
+gradeSel.addEventListener('change', () => { studio.grade = gradeSel.value; redraw(); });
+frameSel.addEventListener('change', () => { studio.frame = frameSel.value; redraw(); });
 sizeSel.addEventListener('change', () => {
-  state.size = sizeSel.value;
+  studio.size = sizeSel.value;
   redraw();
-  say(`Size set to ${state.size}.`);
+  say(`Size set to ${studio.size}.`);
 });
-fillAllChk.addEventListener('change', () => { state.fillAll = fillAllChk.checked; redraw(); });
+fillAllChk.addEventListener('change', () => { studio.fillAll = fillAllChk.checked; redraw(); });
 
-// Surprise me: roll a fresh layout, grade and frame, and show the result.
+// Presets: one click sets layout, grade, frame and words together.
+document.querySelectorAll('[data-preset]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const preset = PRESETS[button.dataset.preset];
+    if (!preset) return;
+    Object.assign(studio, preset);
+    syncControls();
+    redraw();
+    say(`Preset “${button.textContent.trim()}” applied — tweak it from here.`);
+  });
+});
+
+// Surprise me: roll a fresh layout, grade, frame and caption.
 shuffleBtn.addEventListener('click', () => {
   const pick = (list) => list[Math.floor(Math.random() * list.length)];
-  state.layout = pick(LAYOUTS);
-  state.grade = pick(GRADES);
-  state.frame = pick(FRAMES);
-  layoutSel.value = state.layout;
-  gradeSel.value = state.grade;
-  frameSel.value = state.frame;
+  studio.layout = pick(LAYOUTS);
+  studio.grade = pick(GRADES);
+  studio.frame = pick(FRAMES);
+  studio.caption = pick(ROLL_CAPTIONS);
+  syncControls();
   redraw();
-  say(`Rolled ${state.layout} / ${state.grade} / ${state.frame}. Roll again or tweak it.`);
+  say(`Rolled ${studio.layout} / ${studio.grade} / ${studio.frame}. Roll again or tweak it.`);
+});
+
+// Copy a link that reopens this exact cover: layout, grade, frame, size
+// and words all ride in the query string.
+copyLinkBtn.addEventListener('click', async () => {
+  const params = new URLSearchParams({
+    shot: 'cover',
+    photo: 'pier',
+    layout: studio.layout,
+    grade: studio.grade,
+    frame: studio.frame,
+    size: studio.size,
+    caption: studio.caption,
+    subtitle: studio.subtitle,
+  });
+  const link = `${location.origin}${location.pathname}?${params}`;
+  try {
+    await navigator.clipboard.writeText(link);
+    say('Link copied — open it to reload this cover.');
+  } catch {
+    say(`Copy this link: ${link}`);
+  }
+});
+
+// Reset: back to the opening look, with every panel emptied.
+resetBtn.addEventListener('click', () => {
+  studio.panels = [emptySlot(), emptySlot(), emptySlot(), emptySlot()];
+  studio.layout = 'hero';
+  studio.grade = 'sunset';
+  studio.frame = 'none';
+  studio.size = '1080x1080';
+  studio.caption = 'SUNSET HEIST';
+  studio.subtitle = 'VICE CITY';
+  studio.fillAll = false;
+  syncControls();
+  redraw();
+  say('Reset to the opening look.');
 });
 
 exportBtn.addEventListener('click', () => {
-  const dims = SIZES[state.size] || SIZES['1080x1080'];
-  const filename = `vice-city-cover-${dims[0]}x${dims[1]}.png`;
+  const dims = SIZES[studio.size] || SIZES['1080x1080'];
+  const slug = studio.caption.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'cover';
+  const filename = `vice-city-${slug}-${dims[0]}x${dims[1]}.png`;
   canvas.toBlob((blob) => {
     if (!blob) {
       say('Export failed.');
@@ -221,20 +320,20 @@ const query = new URLSearchParams(location.search);
 const shot = query.get('shot');
 if (shot) {
   runShot(shot, query, async (opts) => {
-    state.layout = opts.layout;
-    state.grade = opts.grade;
-    state.frame = opts.frame;
-    state.size = opts.size;
-    state.caption = opts.caption;
-    state.subtitle = opts.subtitle;
-    layoutSel.value = opts.layout;
-    gradeSel.value = opts.grade;
-    frameSel.value = opts.frame;
-    sizeSel.value = opts.size;
-    capInput.value = opts.caption;
-    subInput.value = opts.subtitle;
+    studio.layout = opts.layout;
+    studio.grade = opts.grade;
+    studio.frame = opts.frame;
+    studio.size = opts.size;
+    studio.caption = opts.caption;
+    studio.subtitle = opts.subtitle;
+    syncControls();
     const img = await loadPhoto(`samples/${opts.photo}.jpg`);
-    state.photos = [img, img, img, img];
+    studio.panels = [
+      { img, zoom: 1, ox: 0, oy: 0 },
+      { img, zoom: 1, ox: 0, oy: 0 },
+      { img, zoom: 1, ox: 0, oy: 0 },
+      { img, zoom: 1, ox: 0, oy: 0 },
+    ];
     redraw();
   });
 } else {
