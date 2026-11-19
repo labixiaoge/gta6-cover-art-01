@@ -5,7 +5,7 @@
 
 ## About
 
-Vice City Cover Studio is a GTA 6-style cover art maker that runs entirely offline in your browser. Drop your own photo into one of four panels (or let one photo fill them all), pick a layout — hero, triptych, quad or single — choose a sunset, neon, gold or noir colour grade, write a bold caption and subtitle, then export the finished cover as a PNG in 1080 x 1080, 1080 x 1350 or 1920 x 1080. The cover is drawn live on canvas with hand-drawn vector art: a synthwave sun, palm-tree silhouettes, a skyline and a Vice City sunset grade. No Rockstar Games logo, wordmark, artwork, character or font is used; all fonts are system fonts.
+Vice City Cover Studio is an offline, in-browser maker for GTA 6-style cover art. Put your own photo into one of four panels — or let a single photo fill every panel — pick a layout (hero, triptych, quad or single), choose a sunset, neon, gold or noir colour grade, add a bold caption and subtitle, and export the finished cover as a PNG at 1080 x 1080, 1080 x 1350 or 1920 x 1080. The cover is drawn live on canvas from hand-made vector art: a striped synthwave sun, palm-tree silhouettes, a city skyline and a Vice City sunset grade. It uses no Rockstar Games logo, wordmark, artwork, character or font — all type is set in system fonts.
 
 ## Run it
 
