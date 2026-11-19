@@ -1,26 +1,34 @@
 [
   {
     "h": 720,
+    "label": "Wide hero cover",
     "name": "1-cover.jpg",
+    "purpose": "The finished cover at landscape size, sunset grade.",
     "query": "?shot=cover&photo=pier&caption=SUNSET%20HEIST&layout=hero&grade=sunset&size=1920x1080&subtitle=VICE%20CITY",
     "w": 1280
   },
   {
     "h": 720,
+    "label": "The editor at work",
     "name": "2-editor.jpg",
-    "query": "?shot=editor&photo=boulevard&caption=NEON%20STREETS&layout=hero&grade=neon&size=1080x1080&subtitle=VICE%20CITY",
+    "purpose": "The studio itself: presets on top, triptych cover, neon grade.",
+    "query": "?shot=editor&photo=boulevard&caption=NEON%20STREETS&layout=triptych&grade=neon&size=1080x1080&subtitle=VICE%20CITY",
     "w": 1280
   },
   {
     "h": 1024,
+    "label": "Columns in ember",
     "name": "3-cover.jpg",
-    "query": "?shot=cover&photo=boulevard&caption=NEON%20STREETS&layout=triptych&grade=neon&size=1080x1080&subtitle=VICE%20CITY",
+    "purpose": "The new columns layout in the new ember grade.",
+    "query": "?shot=cover&photo=boulevard&caption=VICE%20NIGHTS&layout=columns&grade=ember&size=1080x1080&subtitle=LEONIDA",
     "w": 1024
   },
   {
     "h": 1280,
+    "label": "Stack at midnight",
     "name": "4-cover.jpg",
-    "query": "?shot=cover&photo=pier&caption=VICE%20CITY&layout=hero&grade=gold&size=1080x1350&subtitle=SUNSET%20HEIST",
+    "purpose": "The new stack layout under the midnight star field.",
+    "query": "?shot=cover&photo=pier&caption=OCEAN%20DRIVE&layout=stack&grade=midnight&size=1080x1350&subtitle=SUNSET%20HEIST",
     "w": 1024
   }
 ]
